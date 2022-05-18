@@ -36,11 +36,26 @@
     </ion-list>
   </div>
 
+  <div *ngFor="let note of allOrders">
+
+    <ion-list>
+      <ion-item-sliding>
+        <ion-item>
+          <ion-label>
+            {{ note.users }}
+          </ion-label>
+        </ion-item>
+      </ion-item-sliding>
+    </ion-list>
+  </div>
+
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="addNote()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
+
 
 
 </ion-content>

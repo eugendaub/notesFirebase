@@ -36,7 +36,7 @@ export class AuthService {
     try {
       const credentials = await createUserWithEmailAndPassword(this.auth, email, password);
       const userDoc = doc(this.firestore, `users/${credentials.user.uid}`);
-      await setDoc(userDoc, { email, chats: [] });
+      await setDoc(userDoc, { email, order: [] });
       return credentials;
     } catch(err) {
       throw(err);
