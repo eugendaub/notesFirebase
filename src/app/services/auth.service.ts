@@ -13,7 +13,8 @@ export class AuthService {
   private currentUserData = null;
   logout$: Subject<boolean> = new Subject<boolean>();
 
-  constructor(private auth: Auth, private firestore: Firestore, private router: Router) {
+  constructor(private auth: Auth, private firestore: Firestore, private router: Router
+  ) {
     onAuthStateChanged(this.auth, user => {
       if (user) {
         const userDoc = doc(this.firestore, `users/${user.uid}`);
@@ -37,6 +38,7 @@ export class AuthService {
       const credentials = await createUserWithEmailAndPassword(this.auth, email, password);
       const userDoc = doc(this.firestore, `users/${credentials.user.uid}`);
       await setDoc(userDoc, { email, order: [] });
+
       return credentials;
     } catch(err) {
       throw(err);

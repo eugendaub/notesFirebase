@@ -1,12 +1,12 @@
 import {ChangeDetectorRef, Component, Input} from '@angular/core';
-import {DataService, Note} from '../services/data.service';
+import {DataService, Note, User} from '../services/data.service';
 import {AlertController, ModalController} from '@ionic/angular';
 import {ModalPage} from '../modal/modal.page';
 import {Auth} from '@angular/fire/auth';
 import {AuthService} from '../services/auth.service';
 import {addDoc, collection, Firestore} from '@angular/fire/firestore';
-import {ActivatedRoute} from "@angular/router";
-import {switchMap} from "rxjs/operators";
+import {ActivatedRoute} from '@angular/router';
+
 
 @Component({
   selector: 'app-home',
@@ -17,10 +17,11 @@ export class HomePage {
   @Input() id: string;
   note: Note = null;
   notes: Note[] = [];
+  users: User[] = [];
   messages = [];
   chatId = null;
   currentUserId = null;
-  users = null;
+  //users = null;
   chatInfo = null;
   allOrders= [];
 
@@ -30,6 +31,10 @@ export class HomePage {
     //Get All Notes
     this.dataService.getNotes().subscribe(res => {
       this.notes = res;
+      this.cd.detectChanges();
+    });
+    this.dataService.getUsers().subscribe(res => {
+      this.users = res;
       this.cd.detectChanges();
     });
     //Get All Order ID
@@ -96,13 +101,19 @@ export class HomePage {
             //this.dataService.addNote({ text: res.text, title: res.title, userEmail: logInUserEmail });
             //this.dataService.addMessage({ text: res.text, title: res.title, userEmail: logInUserEmail });
             //this.dataService.addMessageToTable({ text: res.text, title: res.title, userEmail: logInUserEmail });
-            this.dataService.addOrderToUser(logInUserId);
+            this.dataService.addOrderToUser(logInUserId, logInUserEmail, { text: res.text, title: res.title});
           }
         }
       ]
     });
 
     await alert.present();
+  }
+  openLinkOrderfromUser(){
+    const logInUserEmail = this.authService.getUserEmail();
+    const logInUserId= this.authService.getUserId();
+    console.log('userEmail', logInUserEmail);
+    this.dataService.addOrderwithText(logInUserId, logInUserEmail);
   }
 
   async openNote(note: Note) {
@@ -119,6 +130,13 @@ export class HomePage {
   doneOrder(note: Note){
 
     this.dataService.deleteNote(note);
+
+    //this.modalCtrl.dismiss();
+  }
+
+  deleteOrder(note: Note){
+
+    this.dataService.deleteOrderAndUserOrders(note);
 
     //this.modalCtrl.dismiss();
   }

@@ -8,7 +8,7 @@ import {
   addDoc,
   deleteDoc,
   updateDoc,
-  arrayUnion
+  arrayUnion, arrayRemove, getDoc
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import {AuthService} from './auth.service';
@@ -18,6 +18,16 @@ export interface Note {
   title: string;
   text: string;
   userEmail: string;
+}
+export interface User{
+  id?: string;
+  email: string;
+  userOrders: [];
+}
+export interface Order {
+  id?: string;
+  text: string;
+  title: string;
 }
 export interface Table {
   id?: string;
@@ -34,6 +44,10 @@ export class DataService {
   getNotes(): Observable<Note[]> {
     const notesRef = collection(this.firestore, 'notes');
     return collectionData(notesRef, { idField: 'id'}) as Observable<Note[]>;
+  }
+  getUsers(): Observable<User[]> {
+    const notesRef = collection(this.firestore, 'users');
+    return collectionData(notesRef, { idField: 'id'}) as Observable<User[]>;
   }
   getChatInfo(chatId){
     const chat = doc(this.firestore, `orders/${chatId}`);
@@ -75,15 +89,89 @@ export class DataService {
     return deleteDoc(noteDocRef);
   }
 
+  deleteOrder(note: Note) {
+    const noteDocRef = doc(this.firestore, `orders/${note.id}`);
+    return deleteDoc(noteDocRef);
+  }
+
+  deleteOrderAndUserOrders(note: Note) {
+    const userId = this.auth.getUserId();
+    console.log('uerID: ', userId);
+    console.log('note: ', note);
+
+    const orderRef = doc(this.firestore, `orders/${note.id}`);
+    return deleteDoc(orderRef)
+  .then(res => {
+      const userRef = doc(this.firestore, `users/${userId}`);
+      return updateDoc(userRef, {
+        userOrders: arrayRemove(note.id)
+      });
+    });
+  }
+
   updateNote(note: Note) {
     const noteDocRef = doc(this.firestore, `notes/${note.id}`);
     return updateDoc(noteDocRef, { title: note.title, text: note.text });
   }
 
-  addOrderToUser(chatUsers){
+  addOrderToUser(logInUserId,logInUserEmail, order: Order){
+    const chatsRef = collection(this.firestore, 'orders');
+    const userOrder = {
+      userid: logInUserId,
+      userEmail: logInUserEmail,
+      order
+    };
+    const urlLink = collection(this.firestore, `users/${logInUserId}/userOrders`);
+    console.log('urlLink: ', urlLink);
+
+    return addDoc(chatsRef, userOrder).then( res => {
+      console.log('created order ADDDOC: ', res);
+      const groupID = res.id;
+      const promises = [];
+
+      // In der DB muss für jeden user der DB eintrag angepasst werden
+      // (in diesem Fall in welchen Chats befindet sich der User)
+
+
+        const userChatsRef = doc(this.firestore, `users/${logInUserId}`);
+        const update = updateDoc(userChatsRef, {
+          userOrders: arrayUnion(groupID)
+        });
+        promises.push(update);
+      return Promise.all(promises);
+    });
+  }
+  addOrderwithText(logInUserId,logInUserEmail){
+    //const chatsRef = collection(this.firestore, 'orders');
+    const userOrder = {
+      userid: logInUserId,
+      userEmail: logInUserEmail
+    };
+    const urlLink = doc(this.firestore, `users/${logInUserId}`);
+    console.log('urlLink: ', urlLink);
+
+    return getDoc(urlLink).then( res => {
+      console.log('getDoc: ', res);
+      const groupID = res.id;
+      const promises = [];
+
+      console.log('res.id: ', res.id);
+      // In der DB muss für jeden user der DB eintrag angepasst werden
+      // (in diesem Fall in welchen Chats befindet sich der User)
+
+
+      const userChatsRef = doc(this.firestore, `users/${logInUserId}`);
+
+      //promises.push(update);
+      return Promise.all(promises);
+    });
+  }
+
+  createOrderForUser(logInUserId,logInUserEmail){
     const chatsRef = collection(this.firestore, 'orders');
     const chat = {
-      users: chatUsers
+      userid: logInUserId,
+      userEmail: logInUserEmail
     };
 
     return addDoc(chatsRef, chat).then( res => {
@@ -95,14 +183,25 @@ export class DataService {
       // (in diesem Fall in welchen Chats befindet sich der User)
 
 
-        const userChatsRef = doc(this.firestore, `users/${chatUsers}`);
-        const update = updateDoc(userChatsRef, {
-          userOrders: arrayUnion(groupID)
-        });
-        promises.push(update);
+      const userChatsRef = doc(this.firestore, `users/${logInUserId}`);
+      const update = updateDoc(userChatsRef, {
+        userOrders: arrayUnion(groupID)
+      });
+      promises.push(update);
       return Promise.all(promises);
     });
   }
+
+  addOrder(chatId,msg){
+    const userId = this.auth.getUserId();
+    const messages = collection(this.firestore, `orders/${chatId}/userOrder`);
+    return addDoc( messages, {
+      from: userId,
+      msg
+    });
+  }
+
+
 
 
 

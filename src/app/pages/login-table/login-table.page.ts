@@ -44,6 +44,9 @@ export class LoginTablePage implements OnInit {
     this.authService.signup(this.credentialsForm.value).then(_ => {
       loading.dismiss();
       this.router.navigateByUrl('/home', { replaceUrl: true });
+      const logInUserEmail = this.authService.getUserEmail();
+      const logInUserId= this.authService.getUserId();
+      this.dataService.createOrderForUser(logInUserId, logInUserEmail);
     }, async err => {
       await loading.dismiss();
 
