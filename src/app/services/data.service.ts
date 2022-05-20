@@ -8,7 +8,7 @@ import {
   addDoc,
   deleteDoc,
   updateDoc,
-  arrayUnion, arrayRemove, getDoc
+  arrayUnion, arrayRemove, getDoc, serverTimestamp
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import {AuthService} from './auth.service';
@@ -34,10 +34,12 @@ export interface Table {
   table: string;
 }
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
+  userOrderId= null;
 
   constructor(private firestore: Firestore, private auth: AuthService ) { }
 
@@ -45,9 +47,17 @@ export class DataService {
     const notesRef = collection(this.firestore, 'notes');
     return collectionData(notesRef, { idField: 'id'}) as Observable<Note[]>;
   }
+  getAllSushiOrders(orderId) {
+    const notesRef = collection(this.firestore, `orders/${orderId}`);
+    return collectionData(notesRef, { idField: 'id'});
+  }
   getUsers(): Observable<User[]> {
     const notesRef = collection(this.firestore, 'users');
     return collectionData(notesRef, { idField: 'id'}) as Observable<User[]>;
+  }
+  getUserContentDataWithUserId(userId) {
+    const notesRef = doc(this.firestore, `users/${userId}`);
+    return docData(notesRef, { idField: 'id'});
   }
   getChatInfo(chatId){
     const chat = doc(this.firestore, `orders/${chatId}`);
@@ -88,6 +98,10 @@ export class DataService {
     const noteDocRef = doc(this.firestore, `notes/${note.id}`);
     return deleteDoc(noteDocRef);
   }
+  deleteUserDocument(userId) {
+    const noteDocRef = doc(this.firestore, `users/${userId}`);
+    return deleteDoc(noteDocRef);
+  }
 
   deleteOrder(note: Note) {
     const noteDocRef = doc(this.firestore, `orders/${note.id}`);
@@ -121,8 +135,7 @@ export class DataService {
       userEmail: logInUserEmail,
       order
     };
-    const urlLink = collection(this.firestore, `users/${logInUserId}/userOrders`);
-    console.log('urlLink: ', urlLink);
+
 
     return addDoc(chatsRef, userOrder).then( res => {
       console.log('created order ADDDOC: ', res);
@@ -164,6 +177,19 @@ export class DataService {
 
       //promises.push(update);
       return Promise.all(promises);
+    });
+  }
+  addUserOrdersToCollection(logInUserId, logInUserEmail, order: Order){
+    this.getUserContentDataWithUserId(logInUserId).subscribe(res => {
+      this.userOrderId = res.userOrders;
+      console.log('userOrderID: ', this.userOrderId);
+    });
+    const messages = collection(this.firestore, `orders/${this.userOrderId}/sushiOrder`);
+    return addDoc( messages, {
+      userid: logInUserId,
+      userEmail: logInUserEmail,
+      order,
+      createdAt: serverTimestamp()
     });
   }
 

@@ -53,6 +53,15 @@ export class AuthService {
     this.router.navigateByUrl('/', {replaceUrl: true});
   }
 
+  async deleteUser() {
+    const user = this.auth.currentUser;
+    await user?.delete();
+    this.logout$.next(true);
+
+
+    this.router.navigateByUrl('/', {replaceUrl: true});
+  }
+
   getUserId(){
     return this.auth.currentUser.uid;
   }

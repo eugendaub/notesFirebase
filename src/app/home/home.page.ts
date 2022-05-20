@@ -6,6 +6,7 @@ import {Auth} from '@angular/fire/auth';
 import {AuthService} from '../services/auth.service';
 import {addDoc, collection, Firestore} from '@angular/fire/firestore';
 import {ActivatedRoute} from '@angular/router';
+import {map, switchMap} from "rxjs/operators";
 
 
 @Component({
@@ -21,9 +22,12 @@ export class HomePage {
   messages = [];
   chatId = null;
   currentUserId = null;
-  //users = null;
+  usersOrders = null;
   chatInfo = null;
-  allOrders= [];
+  allOrders = [];
+  allSushiOrders = [];
+  userOrderId = null;
+
 
   constructor(private dataService: DataService,  private cd: ChangeDetectorRef, private alertCtrl: AlertController,
               private modalCtrl: ModalController, private auth: Auth, private authService: AuthService,
@@ -37,39 +41,17 @@ export class HomePage {
       this.users = res;
       this.cd.detectChanges();
     });
+
     //Get All Order ID
     this.dataService.getAllOrderId().subscribe(res =>{
       this.allOrders= res;
+     /* this.dataService.getAllSushiOrders(res).subscribe( sushi =>{
+        this.allSushiOrders = sushi;
+        console.log('Sushi??: ', sushi);
+      });*/
     });
     this.chatId = this.route.snapshot.paramMap.get('chatid');
     console.log('CHAT ID: ', this.chatId);
-
-
-    /*
-    this.chatId = this.route.snapshot.paramMap.get('chatid');
-    this.currentUserId = this.authService.getUserId();
-
-    console.log('My Chat: ', this.chatId);
-    this.dataService.getChatInfo(this.chatId).pipe(
-      switchMap( info => {
-        this.users = {};
-        this.chatInfo = info;
-
-        for (const user of info.users){
-          this.users[user.id]= user.email;
-        }
-        console.log('info: ', this.users);
-        return this.chatService.getChatMessages(this.chatId);
-      }),
-      map(messages => messages.map(msg=>{
-        msg.fromUser = this.users[msg.from] || 'Deleted';
-        return msg;
-      }))
-    ).subscribe(res => {
-      console.log('FIN: ', res);
-
-          this.messages.push(res);
-    });*/
 
   }
 
@@ -102,6 +84,7 @@ export class HomePage {
             //this.dataService.addMessage({ text: res.text, title: res.title, userEmail: logInUserEmail });
             //this.dataService.addMessageToTable({ text: res.text, title: res.title, userEmail: logInUserEmail });
             this.dataService.addOrderToUser(logInUserId, logInUserEmail, { text: res.text, title: res.title});
+            //this.dataService.addUserOrdersToCollection(logInUserId, logInUserEmail,{ text: res.text, title: res.title});
           }
         }
       ]
@@ -113,7 +96,12 @@ export class HomePage {
     const logInUserEmail = this.authService.getUserEmail();
     const logInUserId= this.authService.getUserId();
     console.log('userEmail', logInUserEmail);
-    this.dataService.addOrderwithText(logInUserId, logInUserEmail);
+    //this.dataService.addOrderwithText(logInUserId, logInUserEmail);
+
+    this.dataService.getUserContentDataWithUserId(logInUserId).subscribe(res => {
+      this.userOrderId = res.userOrders;
+      console.log('userOrderID: ', this.userOrderId);
+    });
   }
 
   async openNote(note: Note) {
@@ -143,6 +131,13 @@ export class HomePage {
   logout(){
     this.authService.logout();
   }
+  deleteUser(){
+    const userId = this.authService.getUserId();
+    this.authService.deleteUser();
+    this.dataService.deleteUserDocument(userId);
+  }
+
+
 
   addMessage(chatId,msg){
     const userId = this.authService.getUserId();
