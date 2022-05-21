@@ -83,7 +83,8 @@ export class HomePage {
             //this.dataService.addNote({ text: res.text, title: res.title, userEmail: logInUserEmail });
             //this.dataService.addMessage({ text: res.text, title: res.title, userEmail: logInUserEmail });
             //this.dataService.addMessageToTable({ text: res.text, title: res.title, userEmail: logInUserEmail });
-            this.dataService.addOrderToUser(logInUserId, logInUserEmail, { text: res.text, title: res.title});
+            //this.dataService.addOrderToUser(logInUserId, logInUserEmail, { text: res.text, title: res.title});
+            this.dataService.addOrderToUser(logInUserId, logInUserEmail,  res.text,  res.title);
             //this.dataService.addUserOrdersToCollection(logInUserId, logInUserEmail,{ text: res.text, title: res.title});
           }
         }

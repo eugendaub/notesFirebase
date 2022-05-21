@@ -128,12 +128,13 @@ export class DataService {
     return updateDoc(noteDocRef, { title: note.title, text: note.text });
   }
 
-  addOrderToUser(logInUserId,logInUserEmail, order: Order){
+  addOrderToUser(logInUserId,logInUserEmail, text, title){
     const chatsRef = collection(this.firestore, 'orders');
     const userOrder = {
       userid: logInUserId,
       userEmail: logInUserEmail,
-      order
+      title,
+      text
     };
 
 
