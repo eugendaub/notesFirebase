@@ -64,17 +64,7 @@
     </ion-list>
   </div>
 
-  <ion-row *ngFor="let message of messages">
-    <ion-col size="9" size-md="6" *ngIf="message.from !== currentUserId" class="message other-message">
-      <b>{{message.fromUser}}</b><br>
-      <span>{{message.msg}}
-        <img [src]="message.file" *ngIf="message.file">
-      </span>
-      <div class="time ion-text-right"><br>
-        {{message.createdAt?.toMillis() | date:'short'}}
-      </div>
-    </ion-col>
-  </ion-row>
+
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="addNote()">
