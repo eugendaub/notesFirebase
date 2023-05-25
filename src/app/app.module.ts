@@ -9,6 +9,7 @@ import { AppRoutingModule } from './app-routing.module';
 import {initializeApp, provideFirebaseApp} from '@angular/fire/app';
 import {getFirestore, provideFirestore} from '@angular/fire/firestore';
 import {environment} from '../environments/environment';
+import {environmentFirebase} from './services/firebaseConstant';
 import {getAuth, provideAuth} from '@angular/fire/auth';
 import {getStorage, provideStorage} from '@angular/fire/storage';
 
@@ -16,7 +17,7 @@ import {getStorage, provideStorage} from '@angular/fire/storage';
   declarations: [AppComponent],
   entryComponents: [],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirebaseApp(() => initializeApp(environmentFirebase.firebase)),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     provideStorage(() => getStorage())

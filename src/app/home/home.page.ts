@@ -56,6 +56,7 @@ export class HomePage {
   }
 
   async addNote() {
+    console.log('add');
     const logInUserEmail = this.authService.getUserEmail();
     const logInUserId= this.authService.getUserId();
     console.log('userEmail', logInUserEmail);

@@ -26,7 +26,7 @@ export class AuthService {
       } else {
         this.currentUserData = null;
       }
-    })
+    });
   }
 
   login({email, password}) {
